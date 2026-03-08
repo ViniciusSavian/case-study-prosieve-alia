@@ -1,0 +1,18 @@
+{
+  "name": "sla-watchdog",
+  "version": "1.0.0",
+  "description": "SLA Watchdog — monitora aging de candidatos por estágio e gera alertas",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:slack": "node src/index.js --slack"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "dayjs": "^1.11.13"
+  }
+}

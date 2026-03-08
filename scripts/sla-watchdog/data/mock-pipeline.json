@@ -1,0 +1,208 @@
+{
+  "jobs": [
+    {
+      "id": "job_001",
+      "title": "Senior Backend Engineer",
+      "client": "TechCorp",
+      "status": "ativa",
+      "owner": "ops_user_1",
+      "sequence_id": "seq_backend_senior"
+    },
+    {
+      "id": "job_002",
+      "title": "Frontend React Developer",
+      "client": "StartupABC",
+      "status": "ativa",
+      "owner": "ops_user_2",
+      "sequence_id": "seq_frontend_react"
+    },
+    {
+      "id": "job_003",
+      "title": "Data Engineer",
+      "client": "DataCo",
+      "status": "pausada",
+      "owner": "ops_user_1",
+      "sequence_id": "seq_data_eng"
+    },
+    {
+      "id": "job_004",
+      "title": "Product Designer",
+      "client": "DesignStudio",
+      "status": "ativa",
+      "owner": "ops_user_3",
+      "sequence_id": "seq_product_design"
+    },
+    {
+      "id": "job_005",
+      "title": "DevOps Engineer",
+      "client": "CloudInfra",
+      "status": "ativa",
+      "owner": "ops_user_2",
+      "sequence_id": "seq_devops"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "cand_001",
+      "name": "Ana Silva",
+      "job_id": "job_001",
+      "current_stage": 6,
+      "stage_entered_at": "2026-02-24T10:00:00Z",
+      "last_updated_at": "2026-02-24T10:00:00Z",
+      "previous_alerts_count": 1
+    },
+    {
+      "id": "cand_002",
+      "name": "Bruno Costa",
+      "job_id": "job_001",
+      "current_stage": 6,
+      "stage_entered_at": "2026-02-20T14:30:00Z",
+      "last_updated_at": "2026-02-20T14:30:00Z",
+      "previous_alerts_count": 2
+    },
+    {
+      "id": "cand_003",
+      "name": "Carla Mendes",
+      "job_id": "job_002",
+      "current_stage": 3,
+      "stage_entered_at": "2026-03-03T09:00:00Z",
+      "last_updated_at": "2026-03-03T09:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_004",
+      "name": "Diego Ferreira",
+      "job_id": "job_002",
+      "current_stage": 4,
+      "stage_entered_at": "2026-03-07T11:00:00Z",
+      "last_updated_at": "2026-03-07T11:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_005",
+      "name": "Elisa Rodrigues",
+      "job_id": "job_003",
+      "current_stage": 6,
+      "stage_entered_at": "2026-02-15T08:00:00Z",
+      "last_updated_at": "2026-02-15T08:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_006",
+      "name": "Felipe Almeida",
+      "job_id": "job_003",
+      "current_stage": 3,
+      "stage_entered_at": "2026-02-28T10:00:00Z",
+      "last_updated_at": "2026-02-28T10:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_007",
+      "name": "Gabriela Nunes",
+      "job_id": "job_001",
+      "current_stage": 5,
+      "stage_entered_at": "2026-03-07T16:00:00Z",
+      "last_updated_at": "2026-03-07T16:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_008",
+      "name": "Henrique Lima",
+      "job_id": "job_004",
+      "current_stage": 1,
+      "stage_entered_at": "2026-03-05T09:00:00Z",
+      "last_updated_at": "2026-03-05T09:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_009",
+      "name": "Isabela Torres",
+      "job_id": "job_004",
+      "current_stage": 2,
+      "stage_entered_at": "2026-03-04T14:00:00Z",
+      "last_updated_at": "2026-03-04T14:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_010",
+      "name": "João Pereira",
+      "job_id": "job_002",
+      "current_stage": 6,
+      "stage_entered_at": "2026-02-27T10:00:00Z",
+      "last_updated_at": "2026-02-27T10:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_011",
+      "name": "Karen Souza",
+      "job_id": "job_005",
+      "current_stage": 3,
+      "stage_entered_at": "2026-03-06T08:30:00Z",
+      "last_updated_at": "2026-03-06T08:30:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_012",
+      "name": "Lucas Martins",
+      "job_id": "job_005",
+      "current_stage": 4,
+      "stage_entered_at": "2026-03-04T10:00:00Z",
+      "last_updated_at": "2026-03-04T10:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_013",
+      "name": "Marina Oliveira",
+      "job_id": "job_004",
+      "current_stage": 5,
+      "stage_entered_at": "2026-03-03T15:00:00Z",
+      "last_updated_at": "2026-03-03T15:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_014",
+      "name": "Nicolas Santos",
+      "job_id": "job_001",
+      "current_stage": 2,
+      "stage_entered_at": "2026-03-08T07:00:00Z",
+      "last_updated_at": "2026-03-08T07:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_015",
+      "name": "Patrícia Ribeiro",
+      "job_id": "job_005",
+      "current_stage": 6,
+      "stage_entered_at": "2026-03-01T09:00:00Z",
+      "last_updated_at": "2026-03-01T09:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_016",
+      "name": "Rafael Campos",
+      "job_id": "job_002",
+      "current_stage": 1,
+      "stage_entered_at": "2026-03-08T08:00:00Z",
+      "last_updated_at": "2026-03-08T08:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_017",
+      "name": "Sofia Barbosa",
+      "job_id": "job_004",
+      "current_stage": 3,
+      "stage_entered_at": "2026-03-02T11:00:00Z",
+      "last_updated_at": "2026-03-02T11:00:00Z",
+      "previous_alerts_count": 0
+    },
+    {
+      "id": "cand_018",
+      "name": "Thiago Araújo",
+      "job_id": "job_001",
+      "current_stage": 6,
+      "stage_entered_at": "2026-03-06T10:00:00Z",
+      "last_updated_at": "2026-03-06T10:00:00Z",
+      "previous_alerts_count": 0
+    }
+  ]
+}
