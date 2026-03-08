@@ -13,6 +13,14 @@
    - [1.8 Métricas mínimas esperadas](#18-métricas-mínimas-esperadas)
 2. [Parte 2 - Melhorias via Automação](#parte-2---melhorias-via-automação)
 3. [Parte 3 - Implementação V1](#parte-3---implementação-v1)
+4. [Parte 4 - Script Executável: SLA Watchdog](#parte-4---script-executável-sla-watchdog)
+   - [Justificativa da automação escolhida](#justificativa-da-automação-escolhida)
+   - [Pré-requisitos](#pré-requisitos)
+   - [Instalação e execução](#instalação-e-execução)
+   - [Opções de execução](#opções-de-execução)
+   - [Output esperado](#output-esperado)
+   - [Agendamento via cron](#agendamento-via-cron)
+   - [Adaptação para dados reais](#adaptação-para-dados-reais)
 
 ---
 
@@ -433,6 +441,22 @@ As 4 automações foram priorizadas pelo critério de maior redução de trabalh
   |             -> Log: status=error, error_details=response_body
 ```
 
+#### Diagrama do fluxo de execução
+
+O diagrama abaixo foi criado com **Mermaid** e cobre todos os **10 nodes** do fluxo n8n. A legenda de cores indica o papel de cada etapa:
+
+| Cor | Significado |
+|-----|-------------|
+| 🔵 Azul | Ponto de entrada (webhook) |
+| 🟢 Verde | Encerramento com sucesso |
+| ⚪ Cinza | Skip silencioso (sem ação, apenas log) |
+| 🟠 Laranja | Candidato colocado em fila de espera |
+| 🔴 Vermelho | Bloqueio com criação de task manual ou erro persistente |
+
+![Diagrama do fluxo de execução n8n](image/fluxo-execucao-n8n.png)
+
+> Caso queira ver com mais detalhe, acesse a imagem clicando [aqui](image/fluxo-execucao-n8n.png).
+
 ---
 
 ### Exemplos de payload
@@ -570,3 +594,224 @@ O próprio LemList oferece um parâmetro nativo de deduplicação por email. É 
 A automação de enrollment no LemList foi escolhida como V1 porque resolve o gargalo mais imediato (delay e inconsistência no início do outreach), tem risco operacional controlado (não envia nada sem validação prévia), e gera rastreabilidade desde o primeiro dia. O impacto esperado é uma redução imediata no tempo de ativação de candidatos e uma base de dados de log que alimenta as demais automações, especialmente o SLA Watchdog (Automação 2), que depende de timestamps confiáveis de status change para calcular aging corretamente.
 
 As quatro automações propostas, implementadas em sequência, reduzem o workload diário estimado de 721 minutos para aproximadamente 420 a 450 minutos, dentro de uma jornada de 8 horas, e criam as condições operacionais para escalar o volume de vagas simultâneas sem crescimento linear de headcount.
+
+---
+
+## Parte 4 - Script Executável: SLA Watchdog
+
+### Justificativa da automação escolhida
+
+Das 4 automações propostas na Parte 2, a **Automação 2 (SLA Watchdog)** foi escolhida para implementação como script executável porque é a única que atende todos os critérios de viabilidade imediata:
+
+| Critério | Automação 1 | Automação 2 | Automação 3 | Automação 4 |
+|---|---|---|---|---|
+| Executável sem APIs pagas | Não | **Sim** | Não | Não |
+| Impacto operacional | Alto | **Alto** | Alto | Médio |
+| Esforço de implementação | Médio | **Baixo** | Médio | Baixo |
+| Auto-contido | Não | **Sim** | Não | Não |
+| Demonstrável com mock data | Parcial | **Total** | Parcial | Não |
+
+O script ataca diretamente o problema de **aging invisível** identificado nas seções 1.3 e 1.5: candidatos ficam parados no pipeline (especialmente nos Estágios 3 e 6) sem que o operador perceba, causando perda de candidatos e ilusão de progresso.
+
+**Impacto esperado:** Aging médio no Estágio 6 reduzido de até 30 dias para menos de 10 dias. Detecção de vagas travadas em menos de 1 hora (via cron diário) versus dias (revisão manual).
+
+O PRD completo está disponível em [`docs/PRD-sla-watchdog.md`](docs/PRD-sla-watchdog.md).
+
+---
+
+### Pré-requisitos
+
+- **nvm** (Node Version Manager) — [Guia de instalação](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Node.js 22+** (instalado via nvm)
+- **Git** (para clonar o repositório)
+
+---
+
+### Instalação e execução
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/seu-usuario/case-study-prosieve-alia.git
+cd case-study-prosieve-alia
+
+# 2. Navegar para o diretório do script
+cd scripts/sla-watchdog
+
+# 3. Instalar e usar Node.js 22 via nvm
+nvm install 22
+nvm use 22
+
+# 4. Instalar dependências
+npm install
+
+# 5. Executar o script
+npm start
+```
+
+---
+
+### Opções de execução
+
+```bash
+# Execução padrão (usa mock data, output no console + arquivo JSON)
+node src/index.js
+
+# Com notificação Slack (requer SLACK_WEBHOOK_URL)
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ" node src/index.js --slack
+
+# Com arquivo de dados customizado (substituir mock por dados reais)
+node src/index.js --data=/caminho/para/pipeline-real.json
+```
+
+**Exit codes:**
+- `0` — Nenhum breach critical detectado
+- `1` — Um ou mais breaches critical detectados (útil para integração com CI/alertas)
+- `2` — Erro fatal na execução
+
+---
+
+### Output esperado
+
+O script gera três tipos de output:
+
+**1. Console** — Relatório colorido com candidatos agrupados por severidade:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║           SLA WATCHDOG — Relatório de Aging                  ║
+╚══════════════════════════════════════════════════════════════╝
+
+Resumo
+────────────────────────────────────────────────────────────────
+  Candidatos analisados:  18
+  Em breach (novos):      10
+  Saudáveis:              6
+  Suprimidos (pausadas):  2
+  Aging médio (breach):   6.9 dias
+
+  ● Critical: 4    ● Warning: 2    ● Info: 4
+
+   CRITICAL   Bruno Costa (cand_002)
+  Vaga:      Senior Backend Engineer — TechCorp (job_001)
+  Estágio:   6 - Feedback do cliente
+  Parado:    15 dias (threshold: 7 dias)
+  Owner:     ops_user_1 ⚠ ESCALAR PARA LIDERANÇA
+
+   WARNING    Carla Mendes (cand_003)
+  Vaga:      Frontend React Developer — StartupABC (job_002)
+  Estágio:   3 - Alinhamento com cliente
+  Parado:    5 dias (threshold: 3 dias)
+  Owner:     ops_user_2
+
+Suprimidos (vagas pausadas)
+────────────────────────────────────────────────────────────────
+  ○ Elisa Rodrigues (cand_005) — Data Engineer [vaga pausada]
+```
+
+**2. Arquivo JSON** — Log estruturado em `scripts/sla-watchdog/output/sla-breach-YYYY-MM-DD.json`:
+
+```json
+{
+  "generated_at": "2026-03-08T09:00:00Z",
+  "summary": {
+    "total_candidates_analyzed": 18,
+    "total_breaches": 10,
+    "by_level": { "critical": 4, "warning": 2, "info": 4 },
+    "avg_days_stuck": 6.9
+  },
+  "breaches": [
+    {
+      "candidate_id": "cand_002",
+      "candidate_name": "Bruno Costa",
+      "stage": 6,
+      "stage_description": "Feedback do cliente",
+      "days_stuck": 15,
+      "alert_level": "critical",
+      "escalate_to_leadership": true
+    }
+  ]
+}
+```
+
+**3. Slack (opcional)** — Resumo dos alertas critical enviado via webhook.
+
+---
+
+### Agendamento via cron
+
+Para executar o watchdog diariamente às 9h (horário de Brasília):
+
+```bash
+# Editar crontab
+crontab -e
+
+# Adicionar a linha (ajustar caminhos conforme ambiente)
+0 9 * * 1-5 cd /caminho/para/scripts/sla-watchdog && /home/user/.nvm/versions/node/v22.22.1/bin/node src/index.js --slack >> /var/log/sla-watchdog.log 2>&1
+```
+
+A execução roda apenas de segunda a sexta (`1-5`). O log é appendado em arquivo para auditoria.
+
+---
+
+### Adaptação para dados reais
+
+O script está preparado para substituir o mock data por uma fonte de dados real. Para isso:
+
+**Opção A — Arquivo JSON exportado:**
+
+Exportar os dados do Prosieve no formato esperado e apontar via `--data=`:
+
+```bash
+node src/index.js --data=/exports/prosieve-pipeline.json
+```
+
+**Opção B — Integração com API:**
+
+Substituir a função `loadPipelineData` em `src/index.js` por chamadas HTTP ao Prosieve:
+
+```javascript
+async function loadPipelineData() {
+  const [jobsRes, candidatesRes] = await Promise.all([
+    fetch('https://api.prosieve.com/jobs?status=ativa', { headers: { Authorization: `Bearer ${process.env.PROSIEVE_TOKEN}` } }),
+    fetch('https://api.prosieve.com/candidates?active=true', { headers: { Authorization: `Bearer ${process.env.PROSIEVE_TOKEN}` } }),
+  ]);
+  return {
+    jobs: await jobsRes.json(),
+    candidates: await candidatesRes.json(),
+  };
+}
+```
+
+**Schema esperado do input:**
+
+```json
+{
+  "jobs": [
+    { "id": "string", "title": "string", "client": "string", "status": "ativa|pausada", "owner": "string" }
+  ],
+  "candidates": [
+    { "id": "string", "name": "string", "job_id": "string", "current_stage": 1-6, "stage_entered_at": "ISO8601", "previous_alerts_count": 0 }
+  ]
+}
+```
+
+---
+
+### Estrutura de arquivos do script
+
+```
+scripts/sla-watchdog/
+├── .nvmrc                    # Versão do Node.js (22)
+├── .gitignore                # Ignora node_modules/ e output/
+├── package.json              # Dependências: chalk, dayjs
+├── data/
+│   └── mock-pipeline.json    # Dados simulados para demonstração
+├── output/                   # Logs gerados (gitignored)
+│   └── sla-breach-YYYY-MM-DD.json
+└── src/
+    ├── index.js              # Entrada principal — orquestra o fluxo
+    ├── config.js             # Thresholds de SLA por estágio
+    ├── analyzer.js           # Lógica de aging e idempotência
+    ├── reporter.js           # Formatação do relatório (console + Slack)
+    └── slack-notifier.js     # Envio opcional via webhook
+```
